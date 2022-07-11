@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import os
 import sys
+import glob
+import re
 import multiprocessing
 
 from argparse import Namespace
@@ -87,16 +89,32 @@ def sync_table(table: str, args: Namespace) -> Union[bool, str]:
         )
 
         # Exporting table data, get table definitions and close connection to avoid timeouts
-        postgres.copy_table(table, filepath)
-        size_bytes = os.path.getsize(filepath)
+        postgres.copy_table(
+            table,
+            filepath,
+            split_large_files=args.target.get('split_large_files'),
+            split_file_chunk_size_mb=args.target.get('split_file_chunk_size_mb'),
+            split_file_max_chunks=args.target.get('split_file_max_chunks'),
+        )
+        file_parts = glob.glob(f'{filepath}*')
+        size_bytes = sum([os.path.getsize(file_part) for file_part in file_parts])
         redshift_types = postgres.map_column_types_to_target(table)
         redshift_columns = redshift_types.get('columns', [])
         primary_key = redshift_types.get('primary_key')
         postgres.close_connection()
 
         # Uploading to S3
-        s3_key = redshift.upload_to_s3(filepath)
-        os.remove(filepath)
+        s3_keys = []
+        for file_part in file_parts:
+            s3_keys.append(redshift.upload_to_s3(filepath))
+            os.remove(filepath)
+
+        # Create a pattern that match all file parts by removing multipart suffix
+        s3_key_pattern = (
+            re.sub(r'\.part\d*$', '', s3_keys[0])
+            if len(s3_keys) > 0
+            else 'NO_FILES_TO_LOAD'
+        )
 
         # Creating temp table in Redshift
         redshift.drop_table(target_schema, table, is_temporary=True)
@@ -106,7 +124,7 @@ def sync_table(table: str, args: Namespace) -> Union[bool, str]:
 
         # Load into Redshift table
         redshift.copy_to_table(
-            s3_key, target_schema, table, size_bytes, is_temporary=True
+            s3_key_pattern, target_schema, table, size_bytes, is_temporary=True
         )
 
         # Obfuscate columns
