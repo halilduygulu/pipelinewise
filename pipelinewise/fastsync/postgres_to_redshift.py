@@ -106,8 +106,8 @@ def sync_table(table: str, args: Namespace) -> Union[bool, str]:
         # Uploading to S3
         s3_keys = []
         for file_part in file_parts:
-            s3_keys.append(redshift.upload_to_s3(filepath))
-            os.remove(filepath)
+            s3_keys.append(redshift.upload_to_s3(file_part))
+            os.remove(file_part)
 
         # Create a pattern that match all file parts by removing multipart suffix
         s3_key_pattern = (
