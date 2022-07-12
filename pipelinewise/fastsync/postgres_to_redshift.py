@@ -127,6 +127,8 @@ def sync_table(table: str, args: Namespace) -> Union[bool, str]:
             s3_key_pattern, target_schema, table, size_bytes, is_temporary=True
         )
 
+        redshift.delete_s3_files(s3_keys)
+
         # Obfuscate columns
         redshift.obfuscate_columns(target_schema, table)
 

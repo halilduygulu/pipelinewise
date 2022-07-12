@@ -102,6 +102,11 @@ class FastSyncTargetRedshift:
 
         return s3_key
 
+    def delete_s3_files(self, file_list):
+        bucket = self.connection_config['s3_bucket']
+        for s3_key in file_list:
+            self.s3.delete_object(Bucket=bucket, Key=s3_key)
+
     def create_schema(self, schema):
         sql = 'CREATE SCHEMA IF NOT EXISTS {}'.format(schema)
         self.query(sql)
