@@ -144,6 +144,7 @@ def get_bookmark_for_table(table, properties, db_engine, dbname=None):
             # Log based replication: get mysql binlog position
             if replication_method == 'LOG_BASED':
                 bookmark = db_engine.fetch_current_log_pos()
+                bookmark["last_replication_method"] = "LOG_BASED"
 
             # Key based incremental replication: Get max replication key from source
             elif replication_method == 'INCREMENTAL':
