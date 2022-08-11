@@ -22,7 +22,7 @@ REQUIRED_CONFIG_KEYS = {
     'target': ['host', 'port', 'user', 'password', 'dbname', 's3_bucket'],
 }
 
-DEFAULT_VARCHAR_LENGTH = 10000
+DEFAULT_VARCHAR_LENGTH = 65535
 SHORT_VARCHAR_LENGTH = 256
 LONG_VARCHAR_LENGTH = 65535
 
