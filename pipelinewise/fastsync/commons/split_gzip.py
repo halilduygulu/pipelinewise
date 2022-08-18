@@ -124,7 +124,7 @@ class SplitGzipFile(io.BufferedIOBase):
             # Open the actual chunk file with gzip data writer
             self.chunk_filename = chunk_filename
             if self.compress:
-                self.chunk_file = gzip.open(self.chunk_filename, self.mode)
+                self.chunk_file = gzip.open(self.chunk_filename, self.mode, compresslevel=1)
             else:
                 if 'b' in self.mode:
                     self.chunk_file = builtins.open(  # pylint: disable=unspecified-encoding
