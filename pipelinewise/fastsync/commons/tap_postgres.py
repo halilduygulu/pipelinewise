@@ -433,6 +433,7 @@ class FastSyncTapPostgres:
                             'ELSE "' ||column_name|| '" END AS "' ||column_name|| '"'
                     WHEN data_type IN ('double precision', 'numeric', 'decimal', 'real') THEN {decimal_format} || ' AS ' || column_name
                     WHEN data_type IN ('smallint', 'integer', 'bigint', 'serial', 'bigserial') THEN {integer_format} || ' AS ' || column_name
+                    WHEN column_name IN ('abstract_context') THEN 'NULL AS ' || column_name
                     ELSE '"'||column_name||'"'
                 END AS safe_sql_value,
                 character_maximum_length
